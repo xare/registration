@@ -15,4 +15,9 @@
 
 echo $OUTPUT->header();
 echo "Manage";
+
+$templatecontext = (object)[
+    'Manage' => get_string( 'manageMessage', 'local_registration' ),
+];
+echo $OUTPUT->render_from_template('local_registration/manage', $templatecontext);
 echo $OUTPUT->footer();

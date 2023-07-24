@@ -49,3 +49,5 @@ $string['usercreatedConfirmation'] = "Your user account has been created";
 
 $string['passwordRenewedTitle'] = 'PASSWORD RENEWED';
 $string['passwordRenewedConfirmation'] = "Your password has been renewed";
+
+$string['manageMessage'] = "You have cancelled your request. If you are on this page the reason is that you clicked cancelled on your request. If you want to start over, please click back and start over.";
