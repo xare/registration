@@ -6,6 +6,9 @@ This module creates a registration form, the user submits the form and he receiv
 
 Once the password has been changed he will be allowed to use the moodle platform.
 
+The content of this repository should be installed inside the the /local/registration folder of a moodle site.
+
+
 ## NOTES
 
 This plugin consists on:
@@ -25,6 +28,10 @@ This plugin consists on:
 
 This plugin has been implemented for Moodle Version 4.2.1+ (Build: 20230721)
 A working site where it has been installed can be found at https://moodle.lehioa.katakrak.net
+
+The application files can be accessed at
+https://moodle.lehioa.katakrak.net/local/registration/register.php
+https://moodle.lehioa.katakrak.net/local/registration/new_password.php (login protected)
 
 ## ABOUT THE PROCESS
 
