@@ -12,19 +12,19 @@ The content of this repository should be installed inside the the /local/registr
 ## NOTES
 
 This plugin consists on:
-- version.php: plugin definition file
-- register.php: registerForm rendering controller file
-- user_created.php: controller file redirected once user has been registered.
-- new_password.php: controller file rendering the new password form. This file is pointed at in the email that gets sent to the user.
-- password_renewed.php: controller file redirected once user has renewed the password.
-- cancelled.php: controller we get redirected to on cancellation of the form submission and/or failure to create a user.
-- classes/form/registrationForm.php : Form and validation code for registration form
-- classes/form/newPasswordForm.php: Form and validation code for new Password form.
-- classes/manager.php: "services" or "helper" class to process the submitted data (create user, send email ...)
--  lang/en/local_registration.php: localisation file for english language strings.
-- templates/cancelled.mustache: template for cancelled.php
-- templates/password_renewed.mustache: Template for password_renewed.php file
-- templates/user_create.mustache: Template for user_created.php file.
+- **version.php**: plugin definition file
+- **register.php**: registerForm rendering controller file
+- **user_created.php**: controller file redirected once user has been registered.
+- **new_password.php**: controller file rendering the new password form. This file is pointed at in the email that gets sent to the user.
+- **password_renewed.php**: controller file redirected once user has renewed the password.
+- **cancelled.php**: controller we get redirected to on cancellation of the form submission and/or failure to create a user.
+- **classes/form/registrationForm.php** : Form and validation code for registration form
+- **classes/form/newPasswordForm.php**: Form and validation code for new Password form.
+- **classes/manager.php**: "services" or "helper" class to process the submitted data (create user, send email ...)
+- **lang/en/local_registration.php**: localisation file for english language strings.
+- **templates/cancelled.mustache**: template for cancelled.php
+- **templates/password_renewed.mustache**: Template for password_renewed.php file
+- **templates/user_create.mustache**: Template for user_created.php file.
 
 This plugin has been implemented for Moodle Version 4.2.1+ (Build: 20230721)
 A working site where it has been installed can be found at https://moodle.lehioa.katakrak.net
