@@ -34,6 +34,8 @@
                             ['autocomplete' => 'new-password']);
         $newPasswordForm->addRule('newpassword2', get_string('required','local_registration'), 'required', null, 'client');
         $newPasswordForm->setType('newpassword2', PARAM_RAW);
+
+        $newPasswordForm->addElement('hidden', 'userId');
         
         $this->add_action_buttons();
     }

@@ -370,6 +370,107 @@ code {
 <p>This plugin allows us to register users into moodle. It is a test case so it should not be used on production level until properly tested.</p>
 <p>This module creates a registration form, the user submits the form and he receives an email with a temporary password and a link which will allow him to change that password.</p>
 <p>Once the password has been changed he will be allowed to use the moodle platform.</p>
+<h2 id="notes">NOTES</h2>
+<p>This plugin consists on:</p>
+<ul>
+<li>version.php: plugin definition file</li>
+<li>register.php: registerForm rendering controller file</li>
+<li>user_created.php: controller file redirected once user has been registered.</li>
+<li>new_password.php: controller file rendering the new password form. This file is pointed at in the email that gets sent to the user.</li>
+<li>password_renewed.php: controller file redirected once user has renewed the password.</li>
+<li>cancelled.php: controller we get redirected to on cancellation of the form submission and/or failure to create a user.</li>
+<li>classes/form/registrationForm.php : Form and validation code for registration form</li>
+<li>classes/form/newPasswordForm.php: Form and validation code for new Password form.</li>
+<li>classes/manager.php: &quot;services&quot; or &quot;helper&quot; class to process the submitted data (create user, send email ...)</li>
+<li>lang/en/local_registration.php: localisation file for english language strings.</li>
+<li>templates/cancelled.mustache: template for cancelled.php</li>
+<li>templates/password_renewed.mustache: Template for password_renewed.php file</li>
+<li>templates/user_create.mustache: Template for user_created.php file.</li>
+</ul>
+<p>This plugin has been implemented for Moodle Version 4.2.1+ (Build: 20230721)<br>
+A working site where it has been installed can be found at https://moodle.lehioa.katakrak.net</p>
+<h2 id="about-the-process">ABOUT THE PROCESS</h2>
+<p>At time of the publication of this note some of the expected tasks have been accomplished but also some problems have been met.</p>
+<ul>
+<li>So far the plugin has worked for these tasks
+<ul>
+<li>Creation of a new user account with temporary password creation</li>
+<li>Validation of fields</li>
+<li>Rendering of the forms and redirections</li>
+</ul>
+</li>
+<li>The problem arises with the login procedure. When submitting the username with email and the password the submitted fails to verify against the one stored in the database. In order to tackle this issue I have &quot;hacked&quot; lib/moodlelib.php and added some debugging tags that would provide data to a file called /errorlog/debug.log where I could check the results. I have been actively checking these results with AI tool (chatGPT) but reached unconclusive results. I do realise that the task may have an &quot;easy solution&quot; but yet tried to go to the bottom of the issue in order to understand what is happening.</li>
+</ul>
+<p>I have &quot;hacked&quot; the &quot;validate_internal_user_password&quot; function of lib/moodlelib.php in order to bring light to this issue:</p>
+<pre class="hljs"><code><div>function validate_internal_user_password($user, $password) {
+    global $CFG;
+    file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;Validating password for: {$user-&gt;username}, password: {$password}\n&quot;, FILE_APPEND);
+    if ($user-&gt;password === AUTH_PASSWORD_NOT_CACHED) {
+        // Internal password is not used at all, it can not validate.
+        return false;
+    }
+
+    // If hash isn't a legacy (md5) hash, validate using the library function.
+    if (!password_is_legacy_hash($user-&gt;password)) {
+        file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;Password is not legacy hash: {$user-&gt;password}\n&quot;, FILE_APPEND);
+        $result = password_verify($password, $user-&gt;password);
+        file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;Result of function password verify: {$result}\n&quot;, FILE_APPEND);
+        if (!$result) {
+            file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;Password did not match the hash for: {$user-&gt;username}\n&quot;, FILE_APPEND);
+        }
+
+        return $result;
+        
+    }
+
+    // Otherwise we need to check for a legacy (md5) hash instead. If the hash
+    // is valid we can then update it to the new algorithm.
+
+    $sitesalt = isset($CFG-&gt;passwordsaltmain) ? $CFG-&gt;passwordsaltmain : '';
+    $validated = false;
+    file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;Checking for legacy Hash\n&quot;, FILE_APPEND);
+    
+    file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;password:&quot; . $password.&quot;\n&quot;, FILE_APPEND);
+    file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;User-&gt;password:&quot;. $user-&gt;password . &quot;\n&quot;, FILE_APPEND);
+    file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;md5(password.sitesalt):&quot; . md5($password.$sitesalt).&quot;\n&quot;, FILE_APPEND);
+    file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;md5(password):&quot; . md5($password).&quot;\n&quot;, FILE_APPEND);
+    file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;md5(addslashes(password.sitesalt)):&quot; . md5(addslashes($password).$sitesalt).&quot;\n&quot;, FILE_APPEND);
+    file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', &quot;md5(addslashes(password):&quot; . md5(addslashes($password)).&quot;\n&quot;, FILE_APPEND);
+    if ($user-&gt;password === md5($password.$sitesalt)
+            or $user-&gt;password === md5($password)
+            or $user-&gt;password === md5(addslashes($password).$sitesalt)
+            or $user-&gt;password === md5(addslashes($password))) {
+        // Note: we are intentionally using the addslashes() here because we
+        //       need to accept old password hashes of passwords with magic quotes.
+        file_put_contents($CFG-&gt;dirroot . '/errorlog/debug.log', 'Inside multiple if statement', FILE_APPEND);
+        $validated = true;
+
+    } else {
+        for ($i=1; $i&lt;=20; $i++) { // 20 alternative salts should be enough, right?
+            $alt = 'passwordsaltalt'.$i;
+            if (!empty($CFG-&gt;$alt)) {
+                if ($user-&gt;password === md5($password.$CFG-&gt;$alt) or $user-&gt;password === md5(addslashes($password).$CFG-&gt;$alt)) {
+                    $validated = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if ($validated) {
+        // If the password matches the existing md5 hash, update to the
+        // current hash algorithm while we have access to the user's password.
+        update_internal_user_password($user, $password);
+    }
+
+    return $validated;
+}
+</div></code></pre>
+<p>It's on this line &quot;if (!password_is_legacy_hash($user-&gt;password)) &quot; that the system would return false thus preventing the login. Nonetheless the password creating functions that are used are internal functions of moodle as can be seen in local/registration/manage.php</p>
+<pre class="hljs"><code><div>        $user-&gt;temporaryPassword = generate_password(10);
+        $user-&gt;password = hash_internal_user_password($user-&gt;temporaryPassword);
+</div></code></pre>
+<p>At the time of submitting this code for analysis this issue remains unsolved expecting to be solve in the forthcoming time.</p>
 
 </body>
 

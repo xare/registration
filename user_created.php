@@ -27,5 +27,5 @@ echo $OUTPUT->header();
 $templatecontext = (object)[
     'userCreatedConfirmation' => get_string( 'usercreatedConfirmation', 'local_registration' ),
 ];
-echo $OUTPUT->render_from_template('local_registration/user_create', $templatecontext);
+echo $OUTPUT->render_from_template('local_registration/user_created', $templatecontext);
 echo $OUTPUT->footer();

@@ -20,7 +20,10 @@ use local_registration\manager;
 use dml_exception;
  
 require_once(__DIR__ . '/../../config.php');
- 
+
+// Restrict access to logged-in users
+require_login();
+
 $context = \context_system::instance();
 
 // PAGE SETUP
@@ -34,14 +37,18 @@ $newPasswordForm = new newPasswordForm();
 $userauth = get_auth_plugin( $USER->auth );
 
 if ( $newPasswordForm->is_cancelled() ) {
-    redirect($CFG->wwwroot. '/local/registration/manage.php','The registration has been cancelled.');
+    redirect( $CFG->wwwroot. '/local/registration/cancelled.php', 
+                get_string( 'passwordRenewalCancelled', 'local_registration' ) );
 } else if( $data = $newPasswordForm->get_data()) {
-    $manager = new manager();
-    if ( !$userauth->user_update_password($USER, $data->newpassword1) ) {
-        throw new \moodle_exception( 'errorpasswordupdate', 'auth' );
+    try {
+        $manager = new manager();
+        // Update the user's password
+        $manager->update_user_password($USER, $data->newpassword1);
+        $notice = get_string('registrationPasswordRenewed', 'local_registration');
+    } catch (\moodle_exception $e) {
+        $notice = "Failure to update User password: ". $e->getMessage();
     }
-          
-    redirect( $CFG->wwwroot. '/local/registration/passwordRenewed.php', $notice );
+    redirect( $CFG->wwwroot. '/local/registration/password_renewed.php', $notice );
 }
 
 // PAGE RENDERING

@@ -11,13 +11,12 @@
  $context = \context_system::instance();
  $PAGE->set_url( new moodle_url('/local/registration/manage.php'));
  $PAGE->set_context( $context );
- $PAGE->set_title('MANAGE');
+ $PAGE->set_title('CANCELLED');
 
 echo $OUTPUT->header();
-echo "Manage";
 
 $templatecontext = (object)[
-    'Manage' => get_string( 'manageMessage', 'local_registration' ),
+    'cancelled' => get_string( 'cancelledMessage', 'local_registration' ),
 ];
-echo $OUTPUT->render_from_template('local_registration/manage', $templatecontext);
+echo $OUTPUT->render_from_template('local_registration/cancelled', $templatecontext);
 echo $OUTPUT->footer();

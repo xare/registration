@@ -31,18 +31,23 @@ $PAGE->set_title(get_string('registerTitle', 'local_registration'));
 $registrationForm = new registrationForm();
 
 if ( $registrationForm->is_cancelled() ) {
-    redirect($CFG->wwwroot. '/local/registration/manage.php',get_string('registrationCancelled','local_registration'));
+    redirect($CFG->wwwroot. '/local/registration/cancelled.php',get_string('registrationCancelled','local_registration'));
 } else if( $rForm = $registrationForm->get_data()) {
     //instantiate the /local/registration/classes/manager.php class
     $manager = new manager();
-    $user = $manager->create_user($rForm->email, $rForm->name, $rForm->surname, $rForm->country, $rForm->mobile, $rForm->password);
+    $user = $manager->create_user(
+        $rForm->email, 
+        $rForm->name, 
+        $rForm->surname, 
+        $rForm->country, 
+        $rForm->mobile);
 
     if(false !== $user) {
-        $notice =  $sendMail . ' '.$user->email;
+        $notice =  get_string('emailCreated', 'local_registration') .$user->email;
         redirect($CFG->wwwroot. '/local/registration/user_created.php', $notice);
     } else { 
         $notice = get_string('registrationNotSuccessful', 'local_registration');
-        redirect($CFG->wwwroot. '/local/registration/manage.php', $notice);
+        redirect($CFG->wwwroot. '/local/registration/cancelled.php', $notice);
     }    
     
 }

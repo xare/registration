@@ -8,18 +8,20 @@
  namespace local_registration;
 
 use dml_exception;
+use lang_string;
 use stdClass;
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
+require_once($CFG->libdir . '/moodlelib.php');
 
  class manager {
-    public function create_user($email, $name, $surname, $country, $mobile, $password): mixed 
+    public function create_user($email, $name, $surname, $country, $mobile): mixed 
     {
         global $DB;
         global $CFG;
         // Colecting all data
-        $temporaryPassword = $this->_createTemporaryPassword();
+        
         $user = new stdClass();
         $user->auth = 'manual';
         $user->confirmed = 1;
@@ -30,12 +32,13 @@ require_once($CFG->dirroot . '/user/lib.php');
         $user->lastname = $surname;
         $user->country = $country;
         $user->phone1 = $mobile;
-        //$user->password = hash_internal_user_password($password);
-        $user->password = hash_internal_user_password($temporaryPassword);
+        $user->temporaryPassword = generate_password(10);
+        $user->password = hash_internal_user_password($user->temporaryPassword);
         try {
-            if ( is_numeric( user_create_user( $user, true, false ) ) ){
-                $this->sendPasswordRenewEmail( $email, $name . ' ' . $surname, $temporaryPassword);
-                return $user;
+            if ( is_numeric( $userId = user_create_user( $user, true, false ) ) ){
+                $userObj = $DB->get_record('user', ['id'=> $userId], '*', MUST_EXIST);
+                $this->sendPasswordRenewEmail( $userObj, $user->temporaryPassword );
+                return $userObj;
             }
         } catch (dml_exception $e) {
             return false;
@@ -43,37 +46,42 @@ require_once($CFG->dirroot . '/user/lib.php');
         //return true if data stored
     }
 
-    public function sendPasswordRenewEmail($userEmail, $userName, $temporaryPassword) {
+    public function sendPasswordRenewEmail($user, $temporaryPassword) {
         global $CFG;
 
         $fromUser = new stdClass;
         $fromUser->email = 'juan.etxenike.almeida@gmail.com';
-        $toUser = new stdClass;
-        $toUser->email = $userEmail;
-        $link = $CFG->wwwroot. '/local/registration/new_password.php';
+        $toUser = $user;
+        $toUser->link = $CFG->wwwroot. '/local/registration/new_password.php';
+        $a = $toUser;
+        $a->temporaryPassword = $temporaryPassword; 
+        $a->sitename = 'MoodleTest';
         $subject = get_string('registerEmailSubject','local_registration');
-        $body = get_string('registerEmailBodyDear','local_registration').' '
-                    .$userName.' '
-                    .get_string('registerEmailBodyAccountCreated','local_registration'). ' '
-                    .get_string('registerEmailBodyPassword', 'local_registration'). ' : '
-                    //password comes here
-                    .$temporaryPassword. ' '
-                    .get_string('registerEmailBodyPasswordRenew', 'local_registration'). ' : '
-                    .$link;
+        $body = get_string('newusernewpasswordtext', 'local_registration', $a);
         return email_to_user($toUser, $fromUser, $subject, $body, '');
-    }
+    } 
 
-    private function _createTemporaryPassword($length = 10) {
-        // Define the character set
-        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-={}[]|\:;"<>,.?/~`';
+    public function update_user_password($user, $newPassword) {
+        global $DB;
+        global $CFG;
 
-        // Generate the password
-        $password = '';
-        for ($i = 0; $i < $length; $i++) {
-            // Get a random character from the character set
-            $password .= $chars[random_int(0, strlen($chars) - 1)];
+        // Make sure the user object is valid
+        if (!$user || !isset($user->id)) {
+            throw new \moodle_exception('invaliduser', 'local_registration');
         }
 
-        return $password;
-     }
- }
+        // Get the appropriate authentication plugin
+        $userauth = get_auth_plugin($user->auth);
+
+        // Update the user's password
+        if (!$userauth->user_update_password($user, $newPassword)) {
+            throw new \moodle_exception('errorpasswordupdate', 'auth');
+        }
+
+        // Password updated successfully
+        return true;
+    }
+
+    
+    
+}
