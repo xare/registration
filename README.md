@@ -112,3 +112,6 @@ It's on this line "if (!password_is_legacy_hash($user->password)) " that the sys
 
 At the time of submitting this code for analysis this issue remains unsolved expecting to be solve in the forthcoming time.
 
+Chat with chatgpt for this part of the problem 
+
+https://chat.openai.com/share/0b05f35f-435a-492c-9f1a-e19dbef9170f
