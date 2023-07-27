@@ -29,7 +29,6 @@
             $registrationForm->setType('surname', PARAM_NOTAGS );
             $registrationForm->addRule('surname', get_string('surnameRequired', 'local_registration'), 'required', null, 'server');
         
-
         $registrationForm->addElement( 'select', 'country', get_string('countryLabel', 'local_registration'), [
             'ES' => 'Spain', 
             'GR' => 'Greece', 

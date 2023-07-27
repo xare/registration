@@ -32,12 +32,16 @@ require_once($CFG->libdir . '/moodlelib.php');
         $user->lastname = $surname;
         $user->country = $country;
         $user->phone1 = $mobile;
-        $user->temporaryPassword = generate_password(10);
-        $user->password = hash_internal_user_password($user->temporaryPassword);
+        $temporaryPassword = generate_password(10);
+        $user->password = $temporaryPassword;
+        file_put_contents($CFG->dirroot . '/errorlog/debug.log', "User created Password: {$user->password}\n", FILE_APPEND);
+        //$user->password = hash_internal_user_password($user->temporaryPassword);
+        
         try {
             if ( is_numeric( $userId = user_create_user( $user, true, false ) ) ){
                 $userObj = $DB->get_record('user', ['id'=> $userId], '*', MUST_EXIST);
-                $this->sendPasswordRenewEmail( $userObj, $user->temporaryPassword );
+                file_put_contents($CFG->dirroot . '/errorlog/debug.log', "User encrypted password: {$userObj->password}\n", FILE_APPEND);
+                $this->sendPasswordRenewEmail( $userObj, $temporaryPassword );
                 return $userObj;
             }
         } catch (dml_exception $e) {
