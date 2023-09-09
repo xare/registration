@@ -14,14 +14,30 @@ use stdClass;
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
 require_once($CFG->libdir . '/moodlelib.php');
-
- class manager {
-    public function create_user($email, $name, $surname, $country, $mobile): mixed 
+ 
+ /**
+  * manager
+  */
+ class manager {    
+    /**
+     * create_user
+     * @param string $email
+     * @param string $name
+     * @param string $surname
+     * @param string $country
+     * @param string $mobile
+     * @return void
+     */
+    public function create_user(
+        string $email, 
+        string $name, 
+        string $surname, 
+        string $country, 
+        string $mobile): mixed 
     {
         global $DB;
         global $CFG;
-        // Colecting all data
-        
+        // Colecting all data        
         $user = new stdClass();
         $user->auth = 'manual';
         $user->confirmed = 1;
@@ -34,9 +50,9 @@ require_once($CFG->libdir . '/moodlelib.php');
         $user->phone1 = $mobile;
         $temporaryPassword = generate_password(10);
         $user->password = $temporaryPassword;
-        file_put_contents($CFG->dirroot . '/errorlog/debug.log', "User created Password: {$user->password}\n", FILE_APPEND);
-        //$user->password = hash_internal_user_password($user->temporaryPassword);
-        
+        file_put_contents($CFG->dirroot . '/errorlog/debug.log', 
+            "User created Password: {$user->password}\n", FILE_APPEND);
+
         try {
             if ( is_numeric( $userId = user_create_user( $user, true, false ) ) ){
                 $userObj = $DB->get_record('user', ['id'=> $userId], '*', MUST_EXIST);
@@ -47,10 +63,16 @@ require_once($CFG->libdir . '/moodlelib.php');
         } catch (dml_exception $e) {
             return false;
         }
-        //return true if data stored
     }
-
-    public function sendPasswordRenewEmail($user, $temporaryPassword) {
+    
+    /**
+     * sendPasswordRenewEmail
+     *
+     * @param  stdClass $user
+     * @param  string $temporaryPassword
+     * @return bool
+     */
+    public function sendPasswordRenewEmail(stdClass $user, string $temporaryPassword) : bool {
         global $CFG;
 
         $fromUser = new stdClass;
@@ -64,8 +86,15 @@ require_once($CFG->libdir . '/moodlelib.php');
         $body = get_string('newusernewpasswordtext', 'local_registration', $a);
         return email_to_user($toUser, $fromUser, $subject, $body, '');
     } 
-
-    public function update_user_password($user, $newPassword) {
+    
+    /**
+     * update_user_password
+     *
+     * @param  stdClass $user
+     * @param  string $newPassword
+     * @return mixed
+     */
+    public function update_user_password(stdClass $user, string $newPassword):mixed {
         global $DB;
         global $CFG;
 
@@ -85,7 +114,4 @@ require_once($CFG->libdir . '/moodlelib.php');
         // Password updated successfully
         return true;
     }
-
-    
-    
 }

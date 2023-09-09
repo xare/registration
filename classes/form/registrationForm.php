@@ -36,13 +36,12 @@
             'FR' => 'France', 
             'GB' => 'United Kingdom'
         ]); //Country
-            $registrationForm->setDefault('country','greece');
+            $registrationForm->setDefault('country','Greece');
             $registrationForm->addRule('country', get_string('countryRequired', 'local_registration'), 'required', null, 'server');
 
         $registrationForm->addElement( 'text', 'mobile', get_string('mobileLabel', 'local_registration')); //Mobile
             $registrationForm->setType( 'mobile', PARAM_NOTAGS );
             // we remove password since a temporary password will get sent via email to the user
-        //$registrationForm->addElement( 'password', 'password', 'Enter your password');
             $this->add_action_buttons();
     }
 
