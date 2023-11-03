@@ -18,7 +18,7 @@ require_once($CFG->libdir . '/moodlelib.php');
  /**
   * manager
   */
- class manager {    
+ class local_registration_manager {    
     /**
      * create_user
      * @param string $email
@@ -28,7 +28,7 @@ require_once($CFG->libdir . '/moodlelib.php');
      * @param string $mobile
      * @return void
      */
-    public function create_user(
+    public function local_registration_create_user(
         string $email, 
         string $name, 
         string $surname, 
@@ -57,7 +57,7 @@ require_once($CFG->libdir . '/moodlelib.php');
             if ( is_numeric( $userId = user_create_user( $user, true, false ) ) ){
                 $userObj = $DB->get_record('user', ['id'=> $userId], '*', MUST_EXIST);
                 file_put_contents($CFG->dirroot . '/errorlog/debug.log', "User encrypted password: {$userObj->password}\n", FILE_APPEND);
-                $this->sendPasswordRenewEmail( $userObj, $temporaryPassword );
+                $this->local_registration_send_password_renew_email( $userObj, $temporaryPassword );
                 return $userObj;
             }
         } catch (dml_exception $e) {
@@ -66,25 +66,25 @@ require_once($CFG->libdir . '/moodlelib.php');
     }
     
     /**
-     * sendPasswordRenewEmail
+     * send_password_renew_email
      *
      * @param  stdClass $user
-     * @param  string $temporaryPassword
+     * @param  string $temporarypassword
      * @return bool
      */
-    public function sendPasswordRenewEmail(stdClass $user, string $temporaryPassword) : bool {
+    public function local_registration_send_password_renew_email(stdClass $user, string $temporarypassword) : bool {
         global $CFG;
 
-        $fromUser = new stdClass;
-        $fromUser->email = 'juan.etxenike.almeida@gmail.com';
-        $toUser = $user;
-        $toUser->link = $CFG->wwwroot. '/local/registration/new_password.php';
-        $a = $toUser;
-        $a->temporaryPassword = $temporaryPassword; 
+        $fromuser = new stdClass();
+        $fromuser->email = 'juan.etxenike.almeida@gmail.com';
+        $touser = $user;
+        $touser->link = $CFG->wwwroot. '/local/registration/new_password.php';
+        $a = $touser;
+        $a->temporaryPassword = $temporarypassword; 
         $a->sitename = 'MoodleTest';
         $subject = get_string('registerEmailSubject','local_registration');
         $body = get_string('newusernewpasswordtext', 'local_registration', $a);
-        return email_to_user($toUser, $fromUser, $subject, $body, '');
+        return email_to_user($touser, $fromuser, $subject, $body, '');
     } 
     
     /**
@@ -94,7 +94,7 @@ require_once($CFG->libdir . '/moodlelib.php');
      * @param  string $newPassword
      * @return mixed
      */
-    public function update_user_password(stdClass $user, string $newPassword):mixed {
+    public function local_registration_update_user_password(stdClass $user, string $newPassword):mixed {
         global $DB;
         global $CFG;
 

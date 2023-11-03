@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * @package     local_registration
  * @author      Juan
@@ -36,20 +36,20 @@ if ( $registrationForm->is_cancelled() ) {
     //instantiate the /local/registration/classes/manager.php class
     $manager = new manager();
     $user = $manager->create_user(
-        $rForm->email, 
-        $rForm->name, 
-        $rForm->surname, 
-        $rForm->country, 
+        $rForm->email,
+        $rForm->name,
+        $rForm->surname,
+        $rForm->country,
         $rForm->mobile);
 
     if(false !== $user) {
         $notice =  get_string('emailCreated', 'local_registration') .$user->email;
         redirect($CFG->wwwroot. '/local/registration/user_created.php', $notice);
-    } else { 
+    } else {
         $notice = get_string('registrationNotSuccessful', 'local_registration');
         redirect($CFG->wwwroot. '/local/registration/cancelled.php', $notice);
-    }    
-    
+    }
+
 }
 
 // PAGE RENDERING

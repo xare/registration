@@ -16,7 +16,7 @@
 // cancelled and to passwordRenewed.phppage if success       //
 ///////////////////////////////////////////////////////////////
 use local_registration\form\newPasswordForm;
-use local_registration\manager;
+use local_registration\local_registration_manager;
 use dml_exception;
  
 require_once(__DIR__ . '/../../config.php');
@@ -41,9 +41,9 @@ if ( $newPasswordForm->is_cancelled() ) {
                 get_string( 'passwordRenewalCancelled', 'local_registration' ) );
 } else if( $data = $newPasswordForm->get_data()) {
     try {
-        $manager = new manager();
+        $localregistrationmanager = new local_registration_manager();
         // Update the user's password
-        $manager->update_user_password($USER, $data->newpassword1);
+        $localregistrationmanager->local_registration_update_user_password($USER, $data->newpassword1);
         $notice = get_string('registrationPasswordRenewed', 'local_registration');
     } catch (\moodle_exception $e) {
         $notice = "Failure to update User password: ". $e->getMessage();
